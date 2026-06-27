@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from afcs_api.db import Base, engine
-from afcs_api.routes import actions, artifacts, events, reports, sessions, stakeholders
+from afcs_api.routes import actions, artifacts, evaluations, events, reports, sessions, stakeholders
 
 
 def create_app() -> FastAPI:
@@ -51,6 +51,7 @@ def create_app() -> FastAPI:
     app.include_router(artifacts.router)
     app.include_router(reports.router)
     app.include_router(stakeholders.router)
+    app.include_router(evaluations.router)
 
     # ------------------------------------------------------------------
     # Health

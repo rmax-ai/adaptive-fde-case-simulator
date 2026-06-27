@@ -329,6 +329,231 @@ class SessionService:
         return None
 
     # ------------------------------------------------------------------
+    # Evaluation
+    # ------------------------------------------------------------------
+
+    def evaluate_session(self, session: SessionRecord) -> dict:
+        """Run evaluation over a completed session and return structured results.
+
+        Examines the session's current state against the case's evaluation config:
+        dimension scoring, hard constraint checking, evidence tracking.
+        """
+        case = _load_case(session.case_id)
+        ev_config = case.evaluation
+        state = session.current_state
+
+        # Score each dimension
+        dimensions: list[dict] = []
+        all_findings: list[str] = []
+        all_missed: list[str] = []
+
+        for dim in ev_config.dimensions:
+            score = 50.0  # default mid-point
+            findings: list[str] = []
+            missed: list[str] = []
+
+            # Automated indicators: check state for evidence of each
+            for indicator in dim.automated_indicators:
+                if self._check_indicator(indicator, state):
+                    score += 5.0
+                    findings.append(f"Met indicator: {indicator}")
+                else:
+                    missed.append(indicator)
+
+            # Ensure score is clamped
+            score = max(0.0, min(100.0, score))
+
+            dimensions.append({
+                "name": dim.name,
+                "score": round(score, 1),
+                "max_score": 100.0,
+                "weight": dim.weight,
+                "findings": findings[:10],
+                "missed_evidence": missed[:10],
+            })
+            all_findings.extend(findings)
+            all_missed.extend(missed)
+
+        # Check hard constraints
+        constraint_outcomes: list[dict] = []
+        for hc in ev_config.hard_constraints:
+            passed = self._check_hard_constraint(hc, state)
+            constraint_outcomes.append({
+                "constraint_type": hc.constraint_type,
+                "severity": hc.severity,
+                "passed": passed,
+                "description": hc.description,
+                "details": "Passed" if passed else f"Failed: {hc.condition}",
+            })
+
+        # Overall score: weighted average of dimension scores
+        overall = 0.0
+        total_weight = 0.0
+        for d in dimensions:
+            overall += d["score"] * d["weight"]
+            total_weight += d["weight"]
+
+        # Deduct for hard constraint failures
+        violations = [c for c in constraint_outcomes if not c["passed"]]
+        for v in violations:
+            deduction = 15.0 if v["severity"] == "critical" else 5.0
+            overall -= deduction
+
+        overall = max(
+            0.0,
+            min(100.0, overall / max(total_weight, 0.01) if total_weight > 0 else overall),
+        )
+
+        # Strongest / weakest behaviors
+        sorted_dims = sorted(dimensions, key=lambda d: d["score"], reverse=True)
+        strongest = [d["name"] for d in sorted_dims[:3] if d["score"] >= 50]
+        weakest = [d["name"] for d in sorted_dims[-3:] if d["score"] < 50]
+
+        # Mark session as evaluated
+        domain_session = _record_to_domain(session)
+        if domain_session.status == SessionStatus.COMPLETED:
+            session.status = SessionStatus.EVALUATED.value
+            domain_session.status = SessionStatus.EVALUATED
+
+        result = {
+            "session_id": str(session.id),
+            "overall_score": round(overall, 1),
+            "dimensions": dimensions,
+            "hard_constraint_violations": constraint_outcomes,
+            "strongest_behaviors": strongest,
+            "weakest_behaviors": weakest,
+            "missed_evidence": list(set(all_missed))[:20],
+            "status": session.status,
+        }
+
+        return result
+
+    @staticmethod
+    def _check_indicator(indicator: str, state: dict) -> bool:
+        """Check a single automated indicator against the session state."""
+        indicator_lower = indicator.lower()
+
+        # Check for evidence in various state fields
+        state_str = str(state).lower()
+
+        # Simple keyword matching
+        if indicator_lower in state_str:
+            return True
+
+        # Check specific state paths
+        if "action_log" in state:
+            for entry in state["action_log"]:
+                if isinstance(entry, dict):
+                    entry_str = str(entry).lower()
+                    if indicator_lower in entry_str:
+                        return True
+
+        # Check artifact inspections
+        artifacts_inspected = state.get("artifacts_inspected", [])
+        for art_id in artifacts_inspected:
+            if indicator_lower in str(art_id).lower():
+                return True
+
+        # Check analyses
+        analyses = state.get("analyses", [])
+        for analysis in analyses:
+            if isinstance(analysis, dict):
+                analysis_str = str(analysis).lower()
+                if indicator_lower in analysis_str:
+                    return True
+
+        return False
+
+    @staticmethod
+    def _check_hard_constraint(hc: object, state: dict) -> bool:
+        """Check whether a hard constraint has been violated."""
+        # Support both dict and Pydantic model hard constraints
+        if isinstance(hc, dict):
+            condition = hc.get("condition", "").lower()
+        else:
+            condition = getattr(hc, "condition", "").lower()
+        state_str = str(state).lower()
+
+        # Check for violation patterns
+        violation_phrases = [
+            "violated", "failed", "breached", "not_met", "over_budget",
+        ]
+        for phrase in violation_phrases:
+            if phrase in condition and phrase in state_str:
+                return False
+
+        # Check budget
+        if "budget" in condition:
+            budget_remaining = state.get("budget_remaining", 0)
+            if "exceeded" in condition or "over" in condition:
+                return budget_remaining >= 0
+            return budget_remaining >= 0
+
+        # Check artifact disclosure
+        if "disclosure" in condition or "forbidden" in condition:
+            flags = state.get("flags", {})
+            if flags.get("forbidden_disclosure_occurred", False):
+                return False
+
+        # Default: pass if we can't determine violation
+        return True
+
+    def get_evaluation(self, session: SessionRecord) -> dict | None:
+        """Return stored evaluation results if session is completed/evaluated."""
+        if session.status not in ("completed", "evaluated"):
+            return None
+        evaluation = session.current_state.get("evaluation", {})
+        if evaluation:
+            return evaluation
+        # If no stored evaluation, run one
+        return self.evaluate_session(session)
+
+    def get_report(self, session: SessionRecord) -> dict | None:
+        """Build a full participant report for a completed session."""
+        if session.status not in ("completed", "evaluated"):
+            return None
+
+        evaluation = self.get_evaluation(session)
+        state = session.current_state
+
+        # Build timeline from events
+        events = self.get_events(session.id)
+        timeline = [
+            {
+                "sequence": e.sequence,
+                "event_type": e.event_type,
+                "actor_type": e.actor_type,
+                "timestamp": e.created_at.isoformat() if e.created_at else "",
+                "summary": str(e.payload)[:200] if e.payload else "",
+            }
+            for e in events
+        ]
+
+        # Artifacts inspected
+        artifacts_inspected = state.get("artifacts_inspected", [])
+
+        # Stakeholder interactions
+        interactions = state.get("stakeholder_questions", []) + state.get(
+            "stakeholder_interviews", []
+        )
+
+        # Final recommendation
+        recommendation = state.get("final_recommendation", {})
+
+        return {
+            "session_id": str(session.id),
+            "case_id": session.case_id,
+            "case_version": session.case_version,
+            "participant_id": session.participant_id,
+            "status": session.status,
+            "evaluation": evaluation,
+            "timeline": timeline,
+            "artifacts_inspected": artifacts_inspected,
+            "stakeholder_interactions": interactions,
+            "recommendation": recommendation,
+        }
+
+    # ------------------------------------------------------------------
     # Final recommendation
     # ------------------------------------------------------------------
 
@@ -348,7 +573,19 @@ class SessionService:
             "next_steps": next_steps or [],
             "actor_id": session.participant_id,
         }
-        return self.execute_action(session, "submit_final_recommendation", params)
+        event_record, updated_session = self.execute_action(
+            session, "submit_final_recommendation", params
+        )
+
+        # Auto-trigger evaluation when session is completed
+        domain_session = _record_to_domain(updated_session)
+        if domain_session.status == SessionStatus.COMPLETED:
+            evaluation = self.evaluate_session(updated_session)
+            # Store evaluation results on session state
+            updated_session.current_state["evaluation"] = evaluation
+            self._db.flush()
+
+        return event_record, updated_session
 
     # ------------------------------------------------------------------
     # Stakeholders

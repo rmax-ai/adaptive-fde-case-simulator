@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { ActionLauncher } from "./ActionLauncher";
 import { ArtifactBrowser } from "./ArtifactBrowser";
+import { EvaluationReport } from "./EvaluationReport";
 import { StateOverview } from "./StateOverview";
 import { RegisterPanel } from "./RegisterPanel";
 import { StakeholderChat } from "./StakeholderChat";
@@ -15,6 +17,16 @@ interface SessionWorkspaceProps {
 export function SessionWorkspace({ sessionId, onBack }: SessionWorkspaceProps) {
   const { session, state, isLoading, error } = useSession(sessionId);
   const { actions, execute, isExecuting } = useActions(sessionId);
+  const [showReport, setShowReport] = useState(false);
+
+  if (showReport) {
+    return (
+      <EvaluationReport
+        sessionId={sessionId}
+        onBack={() => setShowReport(false)}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
@@ -52,6 +64,11 @@ export function SessionWorkspace({ sessionId, onBack }: SessionWorkspaceProps) {
         <span className={`status-badge status-${state?.status ?? "active"}`}>
           {state?.status ?? "unknown"}
         </span>
+        {(state?.status === "completed" || state?.status === "evaluated") && (
+          <button className="btn-primary btn-report" onClick={() => setShowReport(true)}>
+            View Report
+          </button>
+        )}
       </header>
 
       <div className="workspace-layout">
