@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import pytest
-from pydantic import ValidationError
-
 from afcs_case_schema.models import (
     ActionDefinition,
     ActionRegistry,
@@ -26,6 +24,7 @@ from afcs_case_schema.models import (
     TimelineConfig,
     TimelineEvent,
 )
+from pydantic import ValidationError
 
 
 class TestCaseMetadata:

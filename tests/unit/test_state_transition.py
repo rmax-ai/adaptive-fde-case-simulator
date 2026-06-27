@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-import pytest
-
 from afcs_simulation_engine import StateTransitionEngine
 from afcs_simulation_engine.state_hash import compute_state_hash
 

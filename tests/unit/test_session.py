@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
-from pydantic import ValidationError
-
 from afcs_domain.session import SessionStatus, SimulationSession
+from pydantic import ValidationError
 
 
 def test_session_creation_defaults() -> None:

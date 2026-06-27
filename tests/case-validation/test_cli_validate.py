@@ -4,11 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-from click.testing import CliRunner
-
 from afcs_api.cli import main
-from afcs_case_schema.validator import validate_case, CaseValidator
+from afcs_case_schema.validator import CaseValidator, validate_case
+from click.testing import CliRunner
 
 # Path to the cases directory
 CASES_DIR = Path(__file__).parent.parent.parent / "cases"

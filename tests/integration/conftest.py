@@ -6,13 +6,12 @@ import tempfile
 from pathlib import Path
 
 import pytest
+from afcs_api.app import create_app
+from afcs_api.db import Base, get_db
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-
-from afcs_api.app import create_app
-from afcs_api.db import Base, get_db
 
 
 @pytest.fixture(autouse=True)

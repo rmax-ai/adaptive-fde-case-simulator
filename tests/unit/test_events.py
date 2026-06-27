@@ -6,9 +6,8 @@ import uuid
 from datetime import UTC, datetime
 
 import pytest
-from pydantic import ValidationError
-
 from afcs_domain.events import SimulationEvent
+from pydantic import ValidationError
 
 
 def test_event_creation_with_defaults() -> None:

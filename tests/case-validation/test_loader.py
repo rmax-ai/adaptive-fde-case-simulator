@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 import yaml
-
 from afcs_case_schema.loader import load_case, load_case_dir
 from afcs_case_schema.models import CaseDefinition, CaseStatus, DifficultyLevel
 
