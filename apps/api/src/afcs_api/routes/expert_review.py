@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session as SASession
 
 from afcs_api.db import get_db
+from afcs_api.middleware import ActorRole, require_role
 from afcs_api.schemas import (
     ExpertDimensionScore,
     ExpertReviewRequest,
@@ -16,12 +17,14 @@ from afcs_api.schemas import (
 )
 from afcs_api.services.session_service import SessionService
 
-router = APIRouter(
-    prefix="/api/v1/sessions/{session_id}/evaluation", tags=["expert-review"]
+router = APIRouter(prefix="/api/v1/sessions/{session_id}/evaluation", tags=["expert-review"])
+
+
+@router.post(
+    "/expert",
+    response_model=ExpertReviewResponse,
+    dependencies=[Depends(require_role(ActorRole.EVALUATOR, ActorRole.ADMIN))],
 )
-
-
-@router.post("/expert", response_model=ExpertReviewResponse)
 def submit_expert_review(
     session_id: uuid.UUID,
     body: ExpertReviewRequest,
@@ -65,9 +68,7 @@ def submit_expert_review(
             for cid in ds.cited_event_ids:
                 if cid in event_map:
                     ev = event_map[cid]
-                    cited_summaries.append(
-                        f"seq {ev.sequence}: {ev.event_type} ({ev.actor_type})"
-                    )
+                    cited_summaries.append(f"seq {ev.sequence}: {ev.event_type} ({ev.actor_type})")
 
         enriched_scores.append(
             ExpertDimensionScore(

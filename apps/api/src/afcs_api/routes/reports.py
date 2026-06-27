@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session as SASession
 
 from afcs_api.db import get_db
+from afcs_api.middleware import ActorRole, require_role
 from afcs_api.schemas import (
     ExecuteActionResponse,
     SubmitFinalRecommendationRequest,
@@ -21,7 +22,11 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=ExecuteActionResponse)
+@router.post(
+    "",
+    response_model=ExecuteActionResponse,
+    dependencies=[Depends(require_role(ActorRole.PARTICIPANT, ActorRole.ADMIN))],
+)
 def submit_final_recommendation(
     session_id: uuid.UUID,
     body: SubmitFinalRecommendationRequest,

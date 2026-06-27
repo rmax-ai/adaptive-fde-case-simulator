@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: afcs
+      POSTGRES_USER: afcs
+      POSTGRES_PASSWORD: afcs_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U afcs"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://afcs:afcs_secret@db:5432/afcs
+    depends_on:
+      db:
+        condition: service_healthy
+    # For hot-reload in development (set PYTHONPATH to find packages)
+    # command: uvicorn afcs_api.app:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  pgdata:

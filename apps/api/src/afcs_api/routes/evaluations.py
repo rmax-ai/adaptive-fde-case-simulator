@@ -8,13 +8,18 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session as SASession
 
 from afcs_api.db import get_db
+from afcs_api.middleware import ActorRole, require_role
 from afcs_api.schemas import EvaluationResponse, ReportResponse
 from afcs_api.services.session_service import SessionService
 
 router = APIRouter(prefix="/api/v1/sessions/{session_id}", tags=["evaluations"])
 
 
-@router.get("/evaluation", response_model=EvaluationResponse)
+@router.get(
+    "/evaluation",
+    response_model=EvaluationResponse,
+    dependencies=[Depends(require_role(ActorRole.EVALUATOR, ActorRole.ADMIN))],
+)
 def get_evaluation(
     session_id: uuid.UUID,
     db: SASession = Depends(get_db),  # noqa: B008
@@ -51,7 +56,11 @@ def get_evaluation(
     )
 
 
-@router.get("/report", response_model=ReportResponse)
+@router.get(
+    "/report",
+    response_model=ReportResponse,
+    dependencies=[Depends(require_role(ActorRole.EVALUATOR, ActorRole.ADMIN))],
+)
 def get_report(
     session_id: uuid.UUID,
     db: SASession = Depends(get_db),  # noqa: B008

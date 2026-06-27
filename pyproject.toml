@@ -17,6 +17,7 @@ dependencies = [
     "pyyaml>=6",
     "httpx>=0.28",
     "click>=8",
+    "slowapi>=0.1.9",
 ]
 
 [project.optional-dependencies]
