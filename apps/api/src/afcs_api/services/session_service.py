@@ -349,3 +349,184 @@ class SessionService:
             "actor_id": session.participant_id,
         }
         return self.execute_action(session, "submit_final_recommendation", params)
+
+    # ------------------------------------------------------------------
+    # Stakeholders
+    # ------------------------------------------------------------------
+
+    def get_stakeholders(self, session: SessionRecord) -> list[dict]:
+        """Return stakeholders with roles and qualitative trust signals.
+
+        Trust signals are derived from numeric trust scores and are
+        always qualitative — never expose raw numeric trust.
+        """
+        case = _load_case(session.case_id)
+        state = session.current_state
+        trust_scores: dict = state.get("trust_scores", {})
+
+        def _to_signal(score: int | float) -> str:
+            if score >= 80:
+                return "cooperative"
+            elif score >= 60:
+                return "hesitant"
+            elif score >= 40:
+                return "awaiting_evidence"
+            elif score >= 20:
+                return "blocked"
+            else:
+                return "escalating"
+
+        stakeholders: list[dict] = []
+        for s in case.organization.stakeholders:
+            numeric = trust_scores.get(s.stakeholder_id, s.trust_initial * 10)
+            stakeholders.append({
+                "id": s.stakeholder_id,
+                "role": s.role,
+                "trust_signal": _to_signal(numeric),
+            })
+
+        return stakeholders
+
+    def send_stakeholder_message(
+        self,
+        session: SessionRecord,
+        stakeholder_id: str,
+        message: str,
+    ) -> dict:
+        """Send a message to a stakeholder and return the response.
+
+        Uses the policy engine to determine the response tone, persists the
+        interaction as an event, and updates the trust state.
+        """
+        case = _load_case(session.case_id)
+
+        # Find the stakeholder config
+        stakeholder = None
+        for s in case.organization.stakeholders:
+            if s.stakeholder_id == stakeholder_id:
+                stakeholder = s
+                break
+        if stakeholder is None:
+            raise ValueError(f"Stakeholder '{stakeholder_id}' not found")
+
+        # Determine tone and trust effect based on stakeholder's rules
+        state = session.current_state
+        trust_scores: dict = state.get("trust_scores", {})
+        current_trust = trust_scores.get(stakeholder_id, stakeholder.trust_initial * 10)
+
+        # Simple policy: trust level drives the tone
+        tone = "neutral"
+        trust_delta = 0
+        disclosed: list[str] = []
+
+        if current_trust >= 80:
+            tone = "helpful"
+            trust_delta = 0
+            # Cooperative stakeholders may share facts
+            if stakeholder.knowledge:
+                disclosed = [stakeholder.knowledge[0]]
+        elif current_trust >= 60:
+            tone = "cautious"
+            trust_delta = 2
+        elif current_trust >= 40:
+            tone = "hesitant"
+            trust_delta = -3
+        elif current_trust >= 20:
+            tone = "frustrated"
+            trust_delta = -5
+        else:
+            tone = "hostile"
+            trust_delta = -2
+
+        # Update trust state
+        new_trust = max(0, min(100, current_trust + trust_delta))
+        trust_scores[stakeholder_id] = new_trust
+        state["trust_scores"] = trust_scores
+
+        # Build simulated response text
+        response_text = self._render_stakeholder_message(stakeholder, message, tone)
+
+        # Persist as an event
+        event = SimulationEvent(
+            session_id=session.id,
+            sequence=session.current_sequence,
+            event_type="stakeholder.responded",
+            actor_type="stakeholder",
+            actor_id=stakeholder_id,
+            payload={
+                "stakeholder_id": stakeholder_id,
+                "participant_message": message,
+                "response": response_text,
+                "tone": tone,
+                "disclosed_fact_ids": disclosed,
+                "trust_signal": self._trust_to_signal(new_trust),
+            },
+        )
+        self._persist_event(event, session.id)
+        session.current_sequence += 1
+        self._db.flush()
+
+        return {
+            "stakeholder_id": stakeholder_id,
+            "message": response_text,
+            "tone": tone,
+            "disclosed_fact_ids": disclosed,
+        }
+
+    @staticmethod
+    def _trust_to_signal(score: int | float) -> str:
+        """Map numeric trust score to qualitative signal."""
+        if score >= 80:
+            return "cooperative"
+        elif score >= 60:
+            return "hesitant"
+        elif score >= 40:
+            return "awaiting_evidence"
+        elif score >= 20:
+            return "blocked"
+        else:
+            return "escalating"
+
+    @staticmethod
+    def _render_stakeholder_message(
+        stakeholder: object,
+        participant_message: str,
+        tone: str,
+    ) -> str:
+        """Render a stakeholder response message based on tone and config.
+
+        This is a template-based renderer (can be replaced with an LLM
+        language renderer later).
+        """
+        role = getattr(stakeholder, "role", "Stakeholder")
+
+        responses = {
+            "helpful": (
+                f"({role}) Thank you for reaching out. I'm happy to help with your query. "
+                f"Regarding '{participant_message[:80]}...' — "
+                f"here's what I can share based on what we know."
+            ),
+            "neutral": (
+                f"({role}) I received your message about '{participant_message[:60]}...'. "
+                f"Let me think about this and get back to you with more details."
+            ),
+            "cautious": (
+                f"({role}) I'm not entirely sure I can share everything on "
+                f"'{participant_message[:60]}...'. Let me check what's appropriate."
+            ),
+            "hesitant": (
+                f"({role}) I'm not comfortable discussing "
+                f"'{participant_message[:60]}...' at this point. "
+                f"We may need to build more trust first."
+            ),
+            "frustrated": (
+                f"({role}) I've already addressed similar questions about "
+                f"'{participant_message[:60]}...'. Please review the documentation provided."
+            ),
+            "hostile": (
+                f"({role}) I don't have time for this. If you need information, "
+                f"please go through the proper escalation channels."
+            ),
+        }
+
+        return responses.get(tone, responses["neutral"])

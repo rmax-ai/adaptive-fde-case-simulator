@@ -120,3 +120,39 @@ class ArtifactListResponse(BaseModel):
     """List of visible artifacts."""
 
     artifacts: list[ArtifactResponse] = Field(default_factory=list)
+
+
+# ── Stakeholder Models ────────────────────────────────────────────────────
+
+
+class StakeholderInfo(BaseModel):
+    """A stakeholder with role and qualitative trust signal."""
+
+    id: str
+    role: str
+    trust_signal: str = Field(
+        default="cooperative",
+        description="Qualitative trust signal: cooperative|hesitant"
+        "|blocked|escalating|awaiting_evidence",
+    )
+
+
+class StakeholderMessageRequest(BaseModel):
+    """Request to send a message to a stakeholder."""
+
+    message: str = Field(..., description="The message text to send")
+
+
+class StakeholderMessageResponse(BaseModel):
+    """Response from a stakeholder after sending a message."""
+
+    stakeholder_id: str
+    message: str
+    tone: str = Field(default="neutral", description="Emotional tone of the response")
+    disclosed_fact_ids: list[str] = Field(default_factory=list)
+
+
+class StakeholderListResponse(BaseModel):
+    """List of stakeholders in the session."""
+
+    stakeholders: list[StakeholderInfo] = Field(default_factory=list)
