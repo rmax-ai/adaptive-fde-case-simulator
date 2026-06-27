@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from afcs_api.db import Base, engine
 from afcs_api.routes import (
     actions,
+    agent,
     artifacts,
     evaluations,
     events,
@@ -56,6 +57,7 @@ def create_app() -> FastAPI:
     # ------------------------------------------------------------------
 
     app.include_router(sessions.router)
+    app.include_router(agent.router)
     app.include_router(actions.router)
     app.include_router(events.router)
     app.include_router(artifacts.router)
