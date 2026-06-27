@@ -278,3 +278,66 @@ class ReportResponse(BaseModel):
     artifacts_inspected: list[str] = Field(default_factory=list)
     stakeholder_interactions: list[dict] = Field(default_factory=list)
     recommendation: dict = Field(default_factory=dict)
+
+
+# ── Agent API Models ─────────────────────────────────────────────────────
+
+
+class AgentActionSchema(BaseModel):
+    """Action schema optimized for AI agent consumption with full JSON Schema specs."""
+
+    action_type: str = Field(..., description="Unique action type identifier")
+    description: str = Field(..., description="Human-readable description of the action")
+    parameters_schema: dict = Field(
+        default_factory=dict,
+        description="Full JSON Schema object describing required and optional parameters",
+    )
+    preconditions: list[str] = Field(
+        default_factory=list,
+        description="List of unmet preconditions (empty = action is available)",
+    )
+    time_cost: int = Field(default=10, description="Estimated time cost in minutes")
+    budget_cost: float | None = Field(default=None, description="Budget cost if any")
+
+
+class AgentStateResponse(BaseModel):
+    """Verbose machine-readable state for AI agent consumption."""
+
+    session_id: str = Field(..., description="UUID of the session")
+    case_id: str = Field(..., description="Case identifier")
+    status: str = Field(..., description="Session status (in_progress, completed, etc.)")
+    phase: str = Field(default="discovery", description="Current simulation phase")
+    current_sequence: int = Field(default=0, description="Next event sequence number")
+    budget_remaining: float = Field(default=0.0, description="Remaining budget in USD")
+    artifacts: list[dict] = Field(default_factory=list, description="Visible artifacts")
+    stakeholder_relationships: dict = Field(
+        default_factory=dict,
+        description="Stakeholder trust signals keyed by stakeholder ID",
+    )
+    flags: dict = Field(default_factory=dict, description="State flags")
+    metadata: dict = Field(default_factory=dict, description="Additional state metadata")
+    available_actions: list[AgentActionSchema] = Field(
+        default_factory=list,
+        description="Actions available in current state",
+    )
+    stakeholders: list[StakeholderInfo] = Field(
+        default_factory=list,
+        description="Stakeholders in the session",
+    )
+    event_count: int = Field(default=0, description="Total events in the session event stream")
+
+
+class AgentActionResult(BaseModel):
+    """Structured result of executing an action via the agent API."""
+
+    success: bool = Field(default=True, description="Whether the action was executed successfully")
+    event_id: str = Field(default="", description="UUID of the emitted event")
+    sequence: int = Field(default=0, description="Event sequence number")
+    event_type: str = Field(default="", description="Type of event emitted")
+    action_type: str = Field(default="", description="The action type that was executed")
+    new_state: AgentStateResponse | None = Field(
+        default=None,
+        description="Full agent state after action execution",
+    )
+    error: str | None = Field(default=None, description="Error message if action failed")
+    effects: list[dict] = Field(default_factory=list, description="Side effects from the action")
