@@ -158,3 +158,52 @@ export interface ReportResponse {
   stakeholder_interactions: Record<string, unknown>[];
   recommendation: Record<string, unknown>;
 }
+
+// ─── Replay & Expert Review ────────────────────────────────────────────
+
+export interface ReplayEventEntry {
+  event: Record<string, unknown>;
+  state_diff: StateDiffEntry[];
+  dimensions: string[];
+  pre_state_snapshot: Record<string, unknown>;
+  post_state_snapshot: Record<string, unknown>;
+  summary: string;
+}
+
+export interface StateDiffEntry {
+  path: string;
+  operation: "set" | "unset" | "append" | "increment" | "decrement" | "changed";
+  old_value: unknown;
+  new_value: unknown;
+  added_items?: number;
+  removed_items?: number;
+}
+
+export interface ReplayTimelineResponse {
+  session_id: string;
+  events: ReplayEventEntry[];
+  total_events: number;
+  available_dimensions: string[];
+}
+
+export interface ExpertDimensionScore {
+  dimension: string;
+  score: number;
+  justification: string;
+  cited_event_ids: string[];
+  cited_event_summaries: string[];
+  strengths: string[];
+  weaknesses: string[];
+}
+
+export interface ExpertReviewRequest {
+  dimension_scores: ExpertDimensionScore[];
+  overall_comment: string;
+}
+
+export interface ExpertReviewResponse {
+  session_id: string;
+  dimension_scores: ExpertDimensionScore[];
+  overall_comment: string;
+  submitted_at: string;
+}

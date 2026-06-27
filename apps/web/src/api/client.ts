@@ -9,6 +9,9 @@ import type {
   StakeholderMessageResponse,
   EvaluationResponse,
   ReportResponse,
+  ReplayTimelineResponse,
+  ExpertReviewRequest,
+  ExpertReviewResponse,
 } from "../types";
 
 const BASE_URL = "/api/v1";
@@ -175,5 +178,33 @@ export function sendStakeholderMessage(
     "POST",
     `/sessions/${sessionId}/stakeholders/${stakeholderId}/messages`,
     { message },
+  );
+}
+
+// ─── Replay Timeline API ─────────────────────────────────────
+
+export function getReplayTimeline(
+  sessionId: string,
+  dimension?: string,
+): Promise<ReplayTimelineResponse> {
+  const params = new URLSearchParams();
+  if (dimension) params.set("dimension", dimension);
+  const qs = params.toString();
+  return request<ReplayTimelineResponse>(
+    "GET",
+    `/sessions/${sessionId}/replay${qs ? `?${qs}` : ""}`,
+  );
+}
+
+// ─── Expert Review API ───────────────────────────────────────
+
+export function submitExpertReview(
+  sessionId: string,
+  review: ExpertReviewRequest,
+): Promise<ExpertReviewResponse> {
+  return request<ExpertReviewResponse>(
+    "POST",
+    `/sessions/${sessionId}/evaluation/expert`,
+    review,
   );
 }

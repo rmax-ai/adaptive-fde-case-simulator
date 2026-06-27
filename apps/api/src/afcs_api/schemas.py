@@ -195,6 +195,76 @@ class EvaluationResponse(BaseModel):
     status: str
 
 
+# ── Replay Models ──────────────────────────────────────────────────────────
+
+
+class ReplayEventResponse(BaseModel):
+    """A single event in the replay timeline with state diff."""
+
+    event: dict = Field(default_factory=dict, description="Raw event data")
+    state_diff: list[dict] = Field(
+        default_factory=list,
+        description="Computed state diffs (pre\u2192post)",
+    )
+    dimensions: list[str] = Field(
+        default_factory=list,
+        description="Relevant evaluation dimensions",
+    )
+    pre_state_snapshot: dict = Field(
+        default_factory=dict, description="Truncated before-state"
+    )
+    post_state_snapshot: dict = Field(
+        default_factory=dict, description="Truncated after-state"
+    )
+    summary: str = ""
+
+
+class ReplayTimelineResponse(BaseModel):
+    """Chronological replay timeline for a session."""
+
+    session_id: str
+    events: list[ReplayEventResponse] = Field(default_factory=list)
+    total_events: int = 0
+    available_dimensions: list[str] = Field(default_factory=list)
+
+
+class ExpertReviewRequest(BaseModel):
+    """Request payload for expert dimension scoring with event citations."""
+
+    dimension_scores: list[ExpertDimensionScore] = Field(
+        default_factory=list,
+        description="Scores for each evaluation dimension with supporting event citations",
+    )
+    overall_comment: str = Field(default="", description="Overall expert commentary")
+
+
+class ExpertDimensionScore(BaseModel):
+    """Score for a single evaluation dimension with event citations."""
+
+    dimension: str = Field(..., description="Dimension name (e.g. 'discovery', 'technical')")
+    score: float = Field(..., ge=0.0, le=100.0, description="Expert-assigned score 0-100")
+    justification: str = Field(default="", description="Narrative justification")
+    cited_event_ids: list[str] = Field(
+        default_factory=list,
+        description="Event IDs that support this score",
+    )
+    cited_event_summaries: list[str] = Field(
+        default_factory=list,
+        description="Human-readable summaries of cited events",
+    )
+    strengths: list[str] = Field(default_factory=list)
+    weaknesses: list[str] = Field(default_factory=list)
+
+
+class ExpertReviewResponse(BaseModel):
+    """Response for an expert review submission."""
+
+    session_id: str
+    dimension_scores: list[ExpertDimensionScore] = Field(default_factory=list)
+    overall_comment: str = ""
+    submitted_at: str = ""
+
+
 class ReportResponse(BaseModel):
     """Full participant report for a completed session."""
 
