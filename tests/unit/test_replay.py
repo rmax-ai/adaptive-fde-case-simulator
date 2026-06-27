@@ -72,18 +72,31 @@ def test_replay_deterministic(engine: StateTransitionEngine, session_in_progress
 def test_replay_rejects_out_of_order(engine: StateTransitionEngine) -> None:
     """Replay raises ValueError for non-monotonic sequences."""
     from uuid import uuid4
+
     sid = uuid4()
     events = [
-        SimulationEvent(session_id=sid, sequence=1, event_type="action_executed",
-                        actor_type="participant", payload={"action_type": "inspect_artifact", "params": {}}),
-        SimulationEvent(session_id=sid, sequence=0, event_type="action_executed",
-                        actor_type="participant", payload={"action_type": "inspect_artifact", "params": {}}),
+        SimulationEvent(
+            session_id=sid,
+            sequence=1,
+            event_type="action_executed",
+            actor_type="participant",
+            payload={"action_type": "inspect_artifact", "params": {}},
+        ),
+        SimulationEvent(
+            session_id=sid,
+            sequence=0,
+            event_type="action_executed",
+            actor_type="participant",
+            payload={"action_type": "inspect_artifact", "params": {}},
+        ),
     ]
     with pytest.raises(ValueError, match="sequence gap"):
         engine.replay_events(events)
 
 
-def test_replay_with_pre_state_hash_integrity(engine: StateTransitionEngine, session_in_progress) -> None:
+def test_replay_with_pre_state_hash_integrity(
+    engine: StateTransitionEngine, session_in_progress
+) -> None:
     """Each event's pre-state hash should match the post-state hash of the prior event."""
     session = deepcopy(session_in_progress)
     initial_hash = compute_state_hash(session.current_state)
@@ -105,5 +118,5 @@ def test_replay_with_pre_state_hash_integrity(engine: StateTransitionEngine, ses
             continue
         prev = events[i - 1]
         assert event.pre_state_hash == prev.post_state_hash, (
-            f"Event {i} pre-state hash doesn't match event {i-1} post-state hash"
+            f"Event {i} pre-state hash doesn't match event {i - 1} post-state hash"
         )

@@ -44,9 +44,7 @@ async def test_get_artifact_by_id(client: AsyncClient):
 
     if artifacts:
         artifact_id = artifacts[0]["id"]
-        response = await client.get(
-            f"/api/v1/sessions/{session_id}/artifacts/{artifact_id}"
-        )
+        response = await client.get(f"/api/v1/sessions/{session_id}/artifacts/{artifact_id}")
         assert response.status_code == 200, response.text
         data = response.json()
         assert data["id"] == artifact_id
@@ -63,16 +61,12 @@ async def test_get_artifact_not_found(client: AsyncClient):
     )
     session_id = create_resp.json()["id"]
 
-    response = await client.get(
-        f"/api/v1/sessions/{session_id}/artifacts/nonexistent-artifact"
-    )
+    response = await client.get(f"/api/v1/sessions/{session_id}/artifacts/nonexistent-artifact")
     assert response.status_code == 404
 
 
 @pytest.mark.asyncio
 async def test_artifacts_on_nonexistent_session(client: AsyncClient):
     """Listing artifacts on a non-existent session should return 404."""
-    response = await client.get(
-        "/api/v1/sessions/00000000-0000-0000-0000-000000000000/artifacts"
-    )
+    response = await client.get("/api/v1/sessions/00000000-0000-0000-0000-000000000000/artifacts")
     assert response.status_code == 404

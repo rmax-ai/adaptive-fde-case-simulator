@@ -453,8 +453,12 @@ class TestReportService:
         assert len(report.counterfactual_improvement) > 0
 
     def test_report_is_frozen(
-        self, session_id, minimal_case, sample_dimension_scores,
-        sample_violations, sample_events,
+        self,
+        session_id,
+        minimal_case,
+        sample_dimension_scores,
+        sample_violations,
+        sample_events,
     ):
         service = ReportService()
         state = CanonicalState(budget_remaining=1000.0)

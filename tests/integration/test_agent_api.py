@@ -53,9 +53,7 @@ async def test_get_agent_state(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_get_agent_state_not_found(client: AsyncClient):
     """GET agent state on non-existent session should return 404."""
-    response = await client.get(
-        "/api/v1/agent/sessions/00000000-0000-0000-0000-000000000000/state"
-    )
+    response = await client.get("/api/v1/agent/sessions/00000000-0000-0000-0000-000000000000/state")
     assert response.status_code == 404
 
 

@@ -77,9 +77,7 @@ def make_minimal_case_definition(**overrides: object) -> CaseDefinition:
         ),
         "timeline": TimelineConfig(
             start_day=0,
-            scheduled_events=[
-                TimelineEvent(day=14, event_type="milestone_review")
-            ],
+            scheduled_events=[TimelineEvent(day=14, event_type="milestone_review")],
         ),
         "evidence": EvidenceManifest(
             artifacts=[

@@ -105,9 +105,7 @@ def _launch_without_rollback(
             launch_ids.append(str(event.event_id))
     if not has_launch:
         return None
-    has_rollback = any(
-        event.payload.get("action_type") == "define_rollback" for event in events
-    )
+    has_rollback = any(event.payload.get("action_type") == "define_rollback" for event in events)
     if has_rollback:
         return None
     return ConstraintViolation(
@@ -174,8 +172,15 @@ def _exposed_restricted_data(
     case_definition: CaseDefinition,
 ) -> ConstraintViolation | None:
     """Critical: Participant exposed or accessed restricted/classified data."""
-    restricted_keywords = ["secret", "classified", "restricted", "pii",
-                               "credential", "password", "token"]
+    restricted_keywords = [
+        "secret",
+        "classified",
+        "restricted",
+        "pii",
+        "credential",
+        "password",
+        "token",
+    ]
     actions_with_exposure: list[str] = []
     for event in events:
         payload = event.payload

@@ -146,6 +146,7 @@ async def test_final_recommendation_endpoint(client: AsyncClient):
     # The endpoint exists and returns a proper response (phase gate prevents execution)
     response = await client.post(
         f"/api/v1/sessions/{session_id}/final-recommendation",
+        headers={"X-Actor-Role": "participant"},
         json={
             "summary": "Found GenAI is wrong solution",
             "recommendation": "Use rule-based automation",

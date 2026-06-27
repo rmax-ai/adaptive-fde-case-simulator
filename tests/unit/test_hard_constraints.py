@@ -238,7 +238,10 @@ class TestExposedRestrictedData:
         assert "exposed_restricted_data" not in types
 
     def test_violation_when_restricted_data_in_artifact(
-        self, session_id, empty_state, minimal_case,
+        self,
+        session_id,
+        empty_state,
+        minimal_case,
     ):
         constraints = build_default_constraints()
         events = [

@@ -34,9 +34,8 @@ class TestSeedCaseValidation:
     )
     def test_case_validates(self, case_label: str, case_dir: Path) -> None:
         result = validate_case(case_dir)
-        assert result.is_valid, (
-            f"Case '{case_label}' failed schema validation:\n"
-            + "\n".join(f"  - {e}" for e in result.errors)
+        assert result.is_valid, f"Case '{case_label}' failed schema validation:\n" + "\n".join(
+            f"  - {e}" for e in result.errors
         )
         assert result.case_definition is not None
         assert result.case_definition.metadata.case_id == case_label
@@ -51,9 +50,7 @@ class TestSeedCaseValidation:
         assert result.is_valid
         assert result.case_definition is not None
         stakeholders = result.case_definition.organization.stakeholders
-        assert len(stakeholders) >= 1, (
-            f"Case '{case_label}' must have at least 1 stakeholder"
-        )
+        assert len(stakeholders) >= 1, f"Case '{case_label}' must have at least 1 stakeholder"
 
     @pytest.mark.parametrize(
         "case_label, case_dir",
@@ -65,9 +62,7 @@ class TestSeedCaseValidation:
         assert result.is_valid
         assert result.case_definition is not None
         dims = result.case_definition.evaluation.dimensions
-        assert len(dims) >= 1, (
-            f"Case '{case_label}' must have at least 1 evaluation dimension"
-        )
+        assert len(dims) >= 1, f"Case '{case_label}' must have at least 1 evaluation dimension"
 
     @pytest.mark.parametrize(
         "case_label, case_dir",
@@ -79,9 +74,7 @@ class TestSeedCaseValidation:
         assert result.is_valid
         assert result.case_definition is not None
         target_facts = result.case_definition.evaluation.target_facts
-        assert len(target_facts) >= 1, (
-            f"Case '{case_label}' must have at least 1 target_fact"
-        )
+        assert len(target_facts) >= 1, f"Case '{case_label}' must have at least 1 target_fact"
 
     @pytest.mark.parametrize(
         "case_label, case_dir",
@@ -133,13 +126,11 @@ class TestSeedCaseReachability:
         assert result.case_definition is not None
 
         r = check_reachability(result.case_definition)
-        assert r.all_reachable, (
-            f"Case '{case_label}' has unreachable target_facts:\n"
-            + "\n".join(f"  - {fact}" for fact in r.unreachable_facts)
+        assert r.all_reachable, f"Case '{case_label}' has unreachable target_facts:\n" + "\n".join(
+            f"  - {fact}" for fact in r.unreachable_facts
         )
-        assert not r.errors, (
-            f"Case '{case_label}' reachability check had errors:\n"
-            + "\n".join(f"  - {e}" for e in r.errors)
+        assert not r.errors, f"Case '{case_label}' reachability check had errors:\n" + "\n".join(
+            f"  - {e}" for e in r.errors
         )
 
     @pytest.mark.parametrize(
@@ -169,14 +160,10 @@ class TestSeedCaseSemantics:
 
     def test_all_seed_cases_exist(self) -> None:
         """Verify all seed case directories and their YAML files exist."""
-        for label, case_dir in SEED_CASES.items():
-            assert case_dir.is_dir(), (
-                f"Case directory not found: {case_dir}"
-            )
+        for _label, case_dir in SEED_CASES.items():
+            assert case_dir.is_dir(), f"Case directory not found: {case_dir}"
             yaml_files = sorted(case_dir.glob("*.yaml"))
-            assert len(yaml_files) >= 1, (
-                f"No .yaml files found in {case_dir}"
-            )
+            assert len(yaml_files) >= 1, f"No .yaml files found in {case_dir}"
 
     def test_all_cases_have_different_budgets(self) -> None:
         """Seed cases should have distinct budgets to reflect different scopes."""

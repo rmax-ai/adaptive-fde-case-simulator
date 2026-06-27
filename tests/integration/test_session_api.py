@@ -28,7 +28,10 @@ async def test_create_session_with_participant(client: AsyncClient):
     """Creating a session with a participant_id should reflect it."""
     response = await client.post(
         "/api/v1/sessions",
-        json={"case_id": "wrong_use_case", "participant_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"},
+        json={
+            "case_id": "wrong_use_case",
+            "participant_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        },
     )
     assert response.status_code == 201, response.text
     data = response.json()
@@ -81,9 +84,7 @@ async def test_get_session_state(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_get_session_not_found(client: AsyncClient):
     """GET non-existent session should return 404."""
-    response = await client.get(
-        "/api/v1/sessions/00000000-0000-0000-0000-000000000000"
-    )
+    response = await client.get("/api/v1/sessions/00000000-0000-0000-0000-000000000000")
     assert response.status_code == 404
 
 

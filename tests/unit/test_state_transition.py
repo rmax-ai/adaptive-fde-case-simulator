@@ -36,7 +36,9 @@ def test_deterministic_full_path(engine: StateTransitionEngine, session_in_progr
     assert event1.pre_state_hash == event2.pre_state_hash
 
 
-def test_phase_gating_prevents_early_action(engine: StateTransitionEngine, session_in_progress) -> None:
+def test_phase_gating_prevents_early_action(
+    engine: StateTransitionEngine, session_in_progress
+) -> None:
     """submit_final_recommendation is blocked before reporting phase."""
     failed = engine.validate_action(session_in_progress, "submit_final_recommendation", {})
     assert len(failed) > 0

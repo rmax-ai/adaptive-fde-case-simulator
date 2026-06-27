@@ -117,9 +117,7 @@ class ReportService:
         missed: list[str] = []
         for ds in dimension_scores:
             if ds.final_score < 0.5 and ds.failures:
-                missed.extend(
-                    f"{ds.dimension}: {f}" for f in ds.failures
-                )
+                missed.extend(f"{ds.dimension}: {f}" for f in ds.failures)
         return missed[:5]
 
     def _find_unnecessary_actions(self, events: list[SimulationEvent]) -> list[str]:
@@ -148,17 +146,13 @@ class ReportService:
         for e in events:
             at = e.payload.get("action_type", "")
             if at in critical_types:
-                decisions.append(
-                    f"{at} at event {e.event_id} (seq {e.sequence})"
-                )
+                decisions.append(f"{at} at event {e.event_id} (seq {e.sequence})")
         return decisions
 
     def _count_assumption_revisions(self, events: list[SimulationEvent]) -> int:
         """Count events that represent assumption revisions."""
         revision_types = {"revise_assumption", "update_understanding", "correct_prior_belief"}
-        return sum(
-            1 for e in events if e.payload.get("action_type") in revision_types
-        )
+        return sum(1 for e in events if e.payload.get("action_type") in revision_types)
 
     def _extract_governance_decisions(self, events: list[SimulationEvent]) -> list[str]:
         """Extract governance-related decisions."""
@@ -167,9 +161,7 @@ class ReportService:
         for e in events:
             at = e.payload.get("action_type", "")
             if at in gov_types:
-                decisions.append(
-                    f"{at} (event {e.event_id})"
-                )
+                decisions.append(f"{at} (event {e.event_id})")
         return decisions
 
     def _generate_alternative_trajectory(

@@ -121,9 +121,10 @@ async def test_trust_signal_updates_after_messaging(client: AsyncClient):
     )
     assert response.status_code == 200
 
-    # After hesitant message (trust_delta=-3, from 50 -> 47), signal should still be awaiting_evidence
+    # After hesitant message (trust_delta=-3, from 50 -> 47),
+    # signal should still be awaiting_evidence
     list_resp = await client.get(f"/api/v1/sessions/{session_id}/stakeholders")
-    cto = [s for s in list_resp.json()["stakeholders"] if s["id"] == "cto"][0]
+    cto = next(s for s in list_resp.json()["stakeholders"] if s["id"] == "cto")
     assert cto["trust_signal"] in (
         "awaiting_evidence",
         "hesitant",

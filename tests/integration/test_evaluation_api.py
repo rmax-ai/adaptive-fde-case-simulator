@@ -100,20 +100,13 @@ def _complete_session_via_service(case_id: str, _test_db: Session) -> str:
     record, _ = service.create_session(case_id)
     session_id = str(record.id)
 
-    # Directly advance the session state to simulate completion
-    # since the phase gate for submit_final_recommendation requires
-    # the "reporting" phase which no built-in action transitions to.
     from uuid import UUID
 
     from afcs_api.models import SessionRecord
-
-    # Update the session record to be "completed"
     from sqlalchemy import update
 
     _test_db.execute(
-        update(SessionRecord)
-        .where(SessionRecord.id == UUID(session_id))
-        .values(status="completed")
+        update(SessionRecord).where(SessionRecord.id == UUID(session_id)).values(status="completed")
     )
     _test_db.commit()
 
@@ -121,6 +114,8 @@ def _complete_session_via_service(case_id: str, _test_db: Session) -> str:
 
 
 # ── Tests ────────────────────────────────────────────────────────────────────
+
+_EVALUATOR_HEADERS = {"X-Actor-Role": "evaluator"}
 
 
 @pytest.mark.asyncio
@@ -134,7 +129,10 @@ async def test_evaluation_returns_403_when_session_not_completed(
     assert resp.status_code == 201, f"Failed to create session: {resp.text}"
     session_id = resp.json()["id"]
 
-    resp = await client.get(f"/api/v1/sessions/{session_id}/evaluation")
+    resp = await client.get(
+        f"/api/v1/sessions/{session_id}/evaluation",
+        headers=_EVALUATOR_HEADERS,
+    )
     assert resp.status_code == 403, (
         f"Expected 403 for non-completed session, got {resp.status_code}: {resp.text}"
     )
@@ -144,9 +142,7 @@ async def test_evaluation_returns_403_when_session_not_completed(
 
 
 @pytest.mark.asyncio
-async def test_report_returns_403_when_session_not_completed(
-    client: AsyncClient, cases_dir: Path
-):
+async def test_report_returns_403_when_session_not_completed(client: AsyncClient, cases_dir: Path):
     """GET /report on an in-progress session should return 403."""
     case_id = _get_first_case_id(cases_dir)
 
@@ -154,7 +150,10 @@ async def test_report_returns_403_when_session_not_completed(
     assert resp.status_code == 201
     session_id = resp.json()["id"]
 
-    resp = await client.get(f"/api/v1/sessions/{session_id}/report")
+    resp = await client.get(
+        f"/api/v1/sessions/{session_id}/report",
+        headers=_EVALUATOR_HEADERS,
+    )
     assert resp.status_code == 403, (
         f"Expected 403 for non-completed session, got {resp.status_code}: {resp.text}"
     )
@@ -167,7 +166,10 @@ async def test_report_returns_403_when_session_not_completed(
 async def test_evaluation_returns_404_for_nonexistent_session(client: AsyncClient):
     """GET /evaluation on a non-existent session should return 404."""
     fake_id = uuid.uuid4()
-    resp = await client.get(f"/api/v1/sessions/{fake_id}/evaluation")
+    resp = await client.get(
+        f"/api/v1/sessions/{fake_id}/evaluation",
+        headers=_EVALUATOR_HEADERS,
+    )
     assert resp.status_code == 404
 
 
@@ -184,7 +186,10 @@ async def test_evaluation_triggers_on_completion(
     session_id = _complete_session_via_service(case_id, _test_db)
 
     # Now evaluation should work
-    eval_resp = await client.get(f"/api/v1/sessions/{session_id}/evaluation")
+    eval_resp = await client.get(
+        f"/api/v1/sessions/{session_id}/evaluation",
+        headers=_EVALUATOR_HEADERS,
+    )
     assert eval_resp.status_code == 200, (
         "Expected 200 for evaluation after completion, "
         f"got {eval_resp.status_code}: {eval_resp.text}"
@@ -201,7 +206,10 @@ async def test_evaluation_triggers_on_completion(
             assert "score" in dim
 
     # Check report
-    report_resp = await client.get(f"/api/v1/sessions/{session_id}/report")
+    report_resp = await client.get(
+        f"/api/v1/sessions/{session_id}/report",
+        headers=_EVALUATOR_HEADERS,
+    )
     assert report_resp.status_code == 200, (
         f"Expected 200 for report, got {report_resp.status_code}: {report_resp.text}"
     )
@@ -220,9 +228,15 @@ async def test_evaluation_returns_consistent_results(
     session_id = _complete_session_via_service(case_id, _test_db)
 
     # Call evaluation twice
-    resp1 = await client.get(f"/api/v1/sessions/{session_id}/evaluation")
+    resp1 = await client.get(
+        f"/api/v1/sessions/{session_id}/evaluation",
+        headers=_EVALUATOR_HEADERS,
+    )
     assert resp1.status_code == 200
-    resp2 = await client.get(f"/api/v1/sessions/{session_id}/evaluation")
+    resp2 = await client.get(
+        f"/api/v1/sessions/{session_id}/evaluation",
+        headers=_EVALUATOR_HEADERS,
+    )
     assert resp2.status_code == 200
 
     data1 = resp1.json()
