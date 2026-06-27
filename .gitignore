@@ -24,3 +24,6 @@ Thumbs.db
 # uv.lock is committed for reproducible builds
 node_modules
 *.db
+docs/site/node_modules/
+docs/site/.svelte-kit/
+docs/site/build/
