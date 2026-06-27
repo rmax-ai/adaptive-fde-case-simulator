@@ -74,9 +74,7 @@ def _make_case_def(
         ),
         evaluation=EvaluationConfig(
             dimensions=[
-                EvaluationDimension(
-                    name="discovery", weight=0.6, criteria=["Test criterion A"]
-                ),
+                EvaluationDimension(name="discovery", weight=0.6, criteria=["Test criterion A"]),
                 EvaluationDimension(
                     name="delivery",
                     weight=0.4,

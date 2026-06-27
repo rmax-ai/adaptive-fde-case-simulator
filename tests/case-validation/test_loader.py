@@ -41,7 +41,7 @@ class TestLoadCase:
         # File must exist for the extension check to be reached
         non_yaml = tmp_path / "test.json"
         non_yaml.write_text("{}", encoding="utf-8")
-        with pytest.raises(ValueError, match="Expected a .yaml or .yml"):
+        with pytest.raises(ValueError, match=r"Expected a .yaml or .yml"):
             load_case(non_yaml)
 
     def test_not_a_directory_in_dir_load(self) -> None:
@@ -58,7 +58,7 @@ class TestLoadCaseDir:
     def test_load_directory_no_yaml_files(self, tmp_path: Path) -> None:
         empty_dir = tmp_path / "empty"
         empty_dir.mkdir()
-        with pytest.raises(FileNotFoundError, match="No .yaml or .yml files found"):
+        with pytest.raises(FileNotFoundError, match=r"No .yaml or .yml files found"):
             load_case_dir(empty_dir)
 
     def test_load_directory_with_invalid_yaml(self, tmp_path: Path) -> None:
@@ -94,5 +94,5 @@ class TestInvalidYaml:
         bad_data = {"metadata": {"case_id": "test"}, "business": {}}
         with open(bad_file, "w") as f:
             yaml.dump(bad_data, f)
-        with pytest.raises(Exception):
+        with pytest.raises((ValueError, KeyError, TypeError)):
             load_case(bad_file)

@@ -82,9 +82,7 @@ async def test_get_events_pagination(client: AsyncClient):
         )
 
     # Get events from sequence 1, limit 1
-    response = await client.get(
-        f"/api/v1/sessions/{session_id}/events?from_sequence=1&limit=1"
-    )
+    response = await client.get(f"/api/v1/sessions/{session_id}/events?from_sequence=1&limit=1")
     assert response.status_code == 200, response.text
     data = response.json()
     assert len(data["items"]) == 1
@@ -95,9 +93,7 @@ async def test_get_events_pagination(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_events_on_nonexistent_session(client: AsyncClient):
     """Getting events on a non-existent session should return 404."""
-    response = await client.get(
-        "/api/v1/sessions/00000000-0000-0000-0000-000000000000/events"
-    )
+    response = await client.get("/api/v1/sessions/00000000-0000-0000-0000-000000000000/events")
     assert response.status_code == 404
 
 

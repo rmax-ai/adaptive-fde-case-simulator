@@ -363,14 +363,16 @@ class SessionService:
             # Ensure score is clamped
             score = max(0.0, min(100.0, score))
 
-            dimensions.append({
-                "name": dim.name,
-                "score": round(score, 1),
-                "max_score": 100.0,
-                "weight": dim.weight,
-                "findings": findings[:10],
-                "missed_evidence": missed[:10],
-            })
+            dimensions.append(
+                {
+                    "name": dim.name,
+                    "score": round(score, 1),
+                    "max_score": 100.0,
+                    "weight": dim.weight,
+                    "findings": findings[:10],
+                    "missed_evidence": missed[:10],
+                }
+            )
             all_findings.extend(findings)
             all_missed.extend(missed)
 
@@ -378,13 +380,15 @@ class SessionService:
         constraint_outcomes: list[dict] = []
         for hc in ev_config.hard_constraints:
             passed = self._check_hard_constraint(hc, state)
-            constraint_outcomes.append({
-                "constraint_type": hc.constraint_type,
-                "severity": hc.severity,
-                "passed": passed,
-                "description": hc.description,
-                "details": "Passed" if passed else f"Failed: {hc.condition}",
-            })
+            constraint_outcomes.append(
+                {
+                    "constraint_type": hc.constraint_type,
+                    "severity": hc.severity,
+                    "passed": passed,
+                    "description": hc.description,
+                    "details": "Passed" if passed else f"Failed: {hc.condition}",
+                }
+            )
 
         # Overall score: weighted average of dimension scores
         overall = 0.0
@@ -476,7 +480,11 @@ class SessionService:
 
         # Check for violation patterns
         violation_phrases = [
-            "violated", "failed", "breached", "not_met", "over_budget",
+            "violated",
+            "failed",
+            "breached",
+            "not_met",
+            "over_budget",
         ]
         for phrase in violation_phrases:
             if phrase in condition and phrase in state_str:
@@ -616,11 +624,13 @@ class SessionService:
         stakeholders: list[dict] = []
         for s in case.organization.stakeholders:
             numeric = trust_scores.get(s.stakeholder_id, s.trust_initial * 10)
-            stakeholders.append({
-                "id": s.stakeholder_id,
-                "role": s.role,
-                "trust_signal": _to_signal(numeric),
-            })
+            stakeholders.append(
+                {
+                    "id": s.stakeholder_id,
+                    "role": s.role,
+                    "trust_signal": _to_signal(numeric),
+                }
+            )
 
         return stakeholders
 

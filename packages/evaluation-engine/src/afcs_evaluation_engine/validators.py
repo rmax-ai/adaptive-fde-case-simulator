@@ -56,9 +56,7 @@ def baseline_defined(
         passed=passed,
         score=1.0 if passed else 0.0,
         evidence_event_ids=[str(i) for i in ids],
-        details="Baseline was defined."
-        if passed
-        else "No baseline definition found.",
+        details="Baseline was defined." if passed else "No baseline definition found.",
     )
 
 
@@ -127,15 +125,11 @@ def irreversible_action_protected(
 ) -> ValidatorResult:
     """If any irreversible actions were performed, a 'define_rollback' must exist."""
     irreversible_types = {"deploy_production", "delete_data", "migrate_schema", "terminate_service"}
-    has_irreversible = any(
-        e.payload.get("action_type") in irreversible_types for e in events
-    )
+    has_irreversible = any(e.payload.get("action_type") in irreversible_types for e in events)
     has_rollback = _any_event_of_type(events, "define_rollback")
     passed = (not has_irreversible) or has_rollback
     irr_ids = [e.event_id for e in events if e.payload.get("action_type") in irreversible_types]
-    rollback_ids = [
-        e.event_id for e in events if e.payload.get("action_type") == "define_rollback"
-    ]
+    rollback_ids = [e.event_id for e in events if e.payload.get("action_type") == "define_rollback"]
     return ValidatorResult(
         validator_name="irreversible_action_protected",
         passed=passed,

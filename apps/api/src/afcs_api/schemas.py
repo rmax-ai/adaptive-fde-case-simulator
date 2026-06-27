@@ -210,12 +210,8 @@ class ReplayEventResponse(BaseModel):
         default_factory=list,
         description="Relevant evaluation dimensions",
     )
-    pre_state_snapshot: dict = Field(
-        default_factory=dict, description="Truncated before-state"
-    )
-    post_state_snapshot: dict = Field(
-        default_factory=dict, description="Truncated after-state"
-    )
+    pre_state_snapshot: dict = Field(default_factory=dict, description="Truncated before-state")
+    post_state_snapshot: dict = Field(default_factory=dict, description="Truncated after-state")
     summary: str = ""
 
 

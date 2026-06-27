@@ -20,7 +20,9 @@ class TestActionHandlers:
         assert result["artifacts_inspected"] == ["doc1"]
 
     def test_inspect_artifact_is_idempotent(self) -> None:
-        result = self._run("inspect_artifact", {"artifacts_inspected": ["doc1"]}, {"artifact_id": "doc1"})
+        result = self._run(
+            "inspect_artifact", {"artifacts_inspected": ["doc1"]}, {"artifact_id": "doc1"}
+        )
         assert result["artifacts_inspected"] == ["doc1"]
 
     def test_inspect_artifact_creates_list(self) -> None:
@@ -30,7 +32,9 @@ class TestActionHandlers:
     # -- 2. ask_stakeholder --
 
     def test_ask_stakeholder_records_question(self) -> None:
-        result = self._run("ask_stakeholder", {}, {"stakeholder_id": "cto", "question": "Any risks?"})
+        result = self._run(
+            "ask_stakeholder", {}, {"stakeholder_id": "cto", "question": "Any risks?"}
+        )
         assert len(result["stakeholder_questions"]) == 1
         assert result["stakeholder_questions"][0]["stakeholder_id"] == "cto"
 
@@ -38,7 +42,9 @@ class TestActionHandlers:
 
     def test_interview_stakeholder_increases_trust(self) -> None:
         state = {"trust_scores": {"cto": 50}}
-        result = self._run("interview_stakeholder", state, {"stakeholder_id": "cto", "topics": ["budget"]})
+        result = self._run(
+            "interview_stakeholder", state, {"stakeholder_id": "cto", "topics": ["budget"]}
+        )
         assert result["trust_scores"]["cto"] == 55
 
     # -- 4. request_access --
@@ -70,7 +76,9 @@ class TestActionHandlers:
     # -- 8. register_risk --
 
     def test_register_risk(self) -> None:
-        result = self._run("register_risk", {}, {"id": "r1", "description": "Data breach", "impact": "high"})
+        result = self._run(
+            "register_risk", {}, {"id": "r1", "description": "Data breach", "impact": "high"}
+        )
         assert result["risks"][0]["impact"] == "high"
 
     # -- 9. update_risk --
@@ -83,7 +91,9 @@ class TestActionHandlers:
     # -- 10. define_baseline --
 
     def test_define_baseline_sets_baseline_and_advances_phase(self) -> None:
-        result = self._run("define_baseline", {"phase": "discovery"}, {"description": "Current state"})
+        result = self._run(
+            "define_baseline", {"phase": "discovery"}, {"description": "Current state"}
+        )
         assert "baseline" in result
         assert result["baseline"]["description"] == "Current state"
         assert result["phase"] == "evaluation"
@@ -110,7 +120,9 @@ class TestActionHandlers:
     # -- 14. select_architecture --
 
     def test_select_architecture_advances_phase(self) -> None:
-        result = self._run("select_architecture", {"phase": "evaluation"}, {"name": "Microservices"})
+        result = self._run(
+            "select_architecture", {"phase": "evaluation"}, {"name": "Microservices"}
+        )
         assert result["selected_architecture"]["name"] == "Microservices"
         assert result["phase"] == "architecture"
 
@@ -130,14 +142,19 @@ class TestActionHandlers:
     # -- 17. run_analysis --
 
     def test_run_analysis_deducts_budget(self) -> None:
-        result = self._run("run_analysis", {"budget_remaining": 50000}, {"findings": "Bug found", "cost": 500})
+        result = self._run(
+            "run_analysis", {"budget_remaining": 50000}, {"findings": "Bug found", "cost": 500}
+        )
         assert result["budget_remaining"] == 49500
 
     # -- 18. run_pilot --
 
     def test_run_pilot_advances_phase(self) -> None:
-        result = self._run("run_pilot", {"phase": "architecture", "budget_remaining": 50000},
-                           {"scope": "Test", "cost": 5000})
+        result = self._run(
+            "run_pilot",
+            {"phase": "architecture", "budget_remaining": 50000},
+            {"scope": "Test", "cost": 5000},
+        )
         assert result["pilot"]["status"] == "running"
         assert result["phase"] == "delivery"
         assert result["budget_remaining"] == 45000
@@ -164,7 +181,9 @@ class TestActionHandlers:
     # -- 22. define_rollout --
 
     def test_define_rollout(self) -> None:
-        result = self._run("define_rollout", {}, {"strategy": "Canary", "phases": ["10%", "50%", "100%"]})
+        result = self._run(
+            "define_rollout", {}, {"strategy": "Canary", "phases": ["10%", "50%", "100%"]}
+        )
         assert result["rollout_plan"]["strategy"] == "Canary"
 
     # -- 23. define_rollback --
@@ -188,15 +207,20 @@ class TestActionHandlers:
     # -- 26. submit_final_recommendation --
 
     def test_submit_final_recommendation_completes(self) -> None:
-        result = self._run("submit_final_recommendation", {"phase": "reporting"},
-                           {"summary": "Done", "recommendation": "Launch"})
+        result = self._run(
+            "submit_final_recommendation",
+            {"phase": "reporting"},
+            {"summary": "Done", "recommendation": "Launch"},
+        )
         assert result["status"] == "completed"
         assert result["phase"] == "completed"
 
     # -- 27. propose_custom_action --
 
     def test_propose_custom_action(self) -> None:
-        result = self._run("propose_custom_action", {}, {"action_name": "custom_review", "description": "..."})
+        result = self._run(
+            "propose_custom_action", {}, {"action_name": "custom_review", "description": "..."}
+        )
         assert result["custom_actions"][0]["action_name"] == "custom_review"
 
     # -- All handlers are pure (no side effects on input) --

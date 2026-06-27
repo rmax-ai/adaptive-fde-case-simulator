@@ -47,9 +47,7 @@ def _compute_state_diff(
                 }
             )
         elif pre_val != post_val:
-            if isinstance(pre_val, (int, float)) and isinstance(
-                post_val, (int, float)
-            ):
+            if isinstance(pre_val, (int, float)) and isinstance(post_val, (int, float)):
                 delta = post_val - pre_val
                 if delta > 0:
                     op = "increment"
