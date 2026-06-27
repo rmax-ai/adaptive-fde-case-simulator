@@ -22,3 +22,4 @@ Thumbs.db
 
 # Lock files (committed: uv.lock)
 # uv.lock is committed for reproducible builds
+node_modules
