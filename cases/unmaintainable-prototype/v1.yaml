@@ -1,0 +1,375 @@
+metadata:
+  case_id: unmaintainable_prototype
+  version: "1.0.0"
+  title: "Unmaintainable Prototype — Scaling a Brittle Bespoke Refund System"
+  domain: "enterprise-support"
+  status: published
+  difficulty: advanced
+  author_ids:
+    - "author-1"
+  reviewer_ids:
+    - "reviewer-1"
+
+business:
+  stated_goal: "Scale the custom refund processing prototype to handle 10x volume enterprise-wide"
+  latent_goal: "Recognize that the prototype is too brittle to scale and needs a proper rebuild"
+  baseline_metrics:
+    current_refund_volume_per_month: 5000
+    target_refund_volume_per_month: 50000
+    system_uptime_pct: 97.2
+    manual_fixes_per_week: 15
+    developer_count: 1
+  success_criteria:
+    - "Identify that the bespoke system cannot scale beyond 2x current load"
+    - "Propose rebuild with proper architecture, testing, and documentation"
+    - "Design migration strategy that avoids business disruption"
+    - "Deliver recommendation within $120k budget"
+  budget:
+    amount: 120000
+    currency: USD
+  deadline_days: 60
+  current_process: "Single developer maintains a custom JavaScript refund engine with no tests, no documentation, no CI/CD"
+  business_risks:
+    - "Single point of failure — only one developer understands the system"
+    - "System crashes weekly under current load, cannot sustain 10x volume"
+    - "No documentation means five-month onboarding for any new developer"
+    - "Regulatory risk from untested refund calculations producing incorrect amounts"
+    - "Business continuity risk if sole developer leaves the company"
+
+technical:
+  systems:
+    - name: "Legacy Refund Engine"
+      type: "Custom Application"
+      description: "Bespoke JavaScript refund processing system built by a single contractor"
+      constraints:
+        - "No automated tests — zero coverage"
+        - "No CI/CD pipeline — deploys happen via SCP to production"
+        - "No documentation — only code comments in mixed languages"
+        - "Runs on single t2.medium EC2 instance"
+        - "No monitoring or alerting beyond basic health check"
+    - name: "Enterprise Payment Gateway"
+      type: "Third-party Service"
+      description: "Stripe Connect for payment processing"
+      constraints:
+        - "API version pinned to legacy v2019"
+        - "No sandbox environment parity with production"
+  data_sources:
+    - name: "Refund Database"
+      type: "MongoDB"
+      format: "BSON"
+      schema_info:
+        collections:
+          - refunds (no indexes)
+          - transactions
+          - audit_log
+      refresh_frequency: "real-time"
+    - name: "Legacy Spreadsheet"
+      type: "CSV Export"
+      format: "CSV"
+      schema_info:
+        columns:
+          - refund_id
+          - amount
+          - reason
+          - approved_by
+      refresh_frequency: "daily"
+  apis: []
+  identity_model:
+    type: "none"
+    description: "No authentication — system uses shared admin credentials"
+  deployment_environment:
+    platform: "aws"
+    region: "us-east-1"
+    instance_type: "t2.medium"
+    scaling: "none"
+  observability:
+    logging: "no structured logging"
+    metrics: "basic uptime check only"
+    alerting: "none"
+  hidden_defects:
+    - "Zero test coverage means every deployment risks undetected regressions"
+    - "No CI/CD means no repeatable deployment process"
+    - "Single developer bus factor means complete knowledge loss risk"
+    - "Manual spreadsheet reconciliation means inconsistency and data drift"
+    - "No monitoring means production issues discovered by customer complaints"
+  technical_constraints:
+    - "Must maintain business continuity during migration"
+    - "Cannot modify legacy system architecture (frozen for migration period)"
+    - "New system must integrate with existing Enterprise Payment Gateway"
+    - "Migration must preserve all historical refund data with audit trail"
+
+organization:
+  stakeholders:
+    - stakeholder_id: product_manager
+      role: "Product Manager — Refund Operations"
+      authority: 7
+      trust_initial: 6
+      goals:
+        - "Scale refund processing to support 50k transactions/month"
+        - "Deliver within Q2 fiscal deadline"
+      hidden_incentives:
+        - "Promotion depends on delivering scalable refund system by Q2 deadline"
+      knowledge:
+        - "Business requirements and volume projections"
+        - "Stakeholder expectations across finance, support, and engineering"
+      false_beliefs:
+        - "The current prototype can be fixed with incremental patches and more hardware"
+      disclosure_rules:
+        - "Will not reveal promotion incentive unless directly asked"
+      escalation_rules:
+        - "Escalates missed deadlines to VP of Product"
+      relationships:
+        engineering_director: "trusts moderately"
+    - stakeholder_id: sole_developer
+      role: "Senior Developer (only maintainer)"
+      authority: 4
+      trust_initial: 5
+      goals:
+        - "Reduce operational firefighting so they can focus on feature work"
+        - "Avoid blame for system architectural deficiencies"
+      hidden_incentives:
+        - "Has already started looking for other jobs due to burnout"
+      knowledge:
+        - "Complete details of the legacy system (tribal knowledge)"
+        - "Every workaround, hack, and undocumented feature"
+      false_beliefs:
+        - "The system is fine for current load if management would stop changing requirements"
+      disclosure_rules:
+        - "Minimizes system issues to avoid looking incompetent"
+      escalation_rules:
+        - "Escalates production outages directly to engineering director"
+      relationships:
+        product_manager: "frustrated by constant scope changes"
+    - stakeholder_id: engineering_director
+      role: "Engineering Director"
+      authority: 9
+      trust_initial: 5
+      goals:
+        - "Reduce technical debt across the organization"
+        - "Improve team bus factor and cross-training"
+      hidden_incentives:
+        - "Under pressure from CTO to modernize without increasing headcount"
+      knowledge:
+        - "High-level architecture but no detailed system knowledge"
+        - "Budget and resource allocation"
+      false_beliefs:
+        - "A rewrite would take too long and risks business disruption"
+      disclosure_rules:
+        - "Will not reveal headcount pressure unless trust is built"
+      escalation_rules:
+        - "Escalates resourcing issues to CTO"
+      relationships:
+        product_manager: "aligned on delivery timelines"
+        sole_developer: "concerned about dependency"
+
+governance:
+  data_classification: "restricted"
+  applicable_policies:
+    - "Data retention policy"
+    - "Financial transaction accuracy policy"
+    - "Access control policy (currently non-compliant)"
+    - "Business continuity policy"
+  approval_rules:
+    - "Engineering director approval required for architecture changes"
+    - "CTO approval required for migration to new platform"
+    - "Finance team sign-off for refund calculation logic changes"
+  human_review_boundaries:
+    - "All refunds > $1000 must be manually verified post-processing"
+    - "Weekly reconciliation of spreadsheet vs database required during migration"
+  audit_requirements:
+    - "Complete audit trail for all refund calculations and approvals"
+    - "Monthly system health and observability report"
+  forbidden_actions:
+    - "Direct production database modifications"
+    - "Deploy without peer review"
+  score_caps:
+    max_velocity_without_tests: 0.3
+  automatic_failures:
+    - "proceed_without_migration_plan"
+
+timeline:
+  start_day: 0
+  scheduled_events:
+    - day: 7
+      event_type: "system_audit"
+      description: "Conduct system audit of legacy prototype"
+      triggers:
+        - "request_access_to_production"
+    - day: 30
+      event_type: "architecture_review"
+      description: "Review proposed architecture with engineering director"
+      triggers:
+        - "submit_architecture_proposal"
+  conditional_events:
+    - day: 14
+      event_type: "production_incident"
+      description: "Legacy system crashes under peak load"
+      triggers:
+        - "load_test_exceeds_2x"
+  time_costs:
+    request_access_to_production: 30
+    submit_architecture_proposal: 180
+    design_migration_plan: 240
+
+evidence:
+  artifacts:
+    - artifact_id: legacy-system-audit
+      type: document
+      path: "docs/legacy-system-audit-2025.pdf"
+      visible_initially: true
+      classification: "internal"
+    - artifact_id: incident-log
+      type: log
+      path: "logs/production-incidents-2024.csv"
+      visible_initially: true
+      classification: "internal"
+    - artifact_id: sole-dev-handover-notes
+      type: document
+      path: "docs/handover-notes.pdf"
+      visible_initially: false
+      reveal_conditions:
+        - "trust_with_sole_developer >= 7"
+      classification: "restricted"
+    - artifact_id: spreadsheet-reconciliation
+      type: table
+      path: "data/reconciliation-jan-2025.csv"
+      visible_initially: true
+      classification: "internal"
+    - artifact_id: system-architecture-diagram
+      type: diagram
+      path: "docs/current-architecture.png"
+      visible_initially: true
+      classification: "internal"
+
+actions:
+  allowed:
+    - action_type: chat_message
+      parameter_schema:
+        type: object
+        properties:
+          recipient:
+            type: string
+          message:
+            type: string
+        required:
+          - recipient
+          - message
+      preconditions:
+        - "session_active"
+      time_cost: 5
+    - action_type: upload_artifact
+      parameter_schema:
+        type: object
+        properties:
+          filename:
+            type: string
+          content:
+            type: string
+          type:
+            type: string
+            enum:
+              - pdf
+              - docx
+              - md
+        required:
+          - filename
+          - content
+      time_cost: 10
+    - action_type: request_approval
+      parameter_schema:
+        type: object
+        properties:
+          scope:
+            type: string
+          justification:
+            type: string
+        required:
+          - scope
+          - justification
+      time_cost: 15
+    - action_type: request_access_to_production
+      parameter_schema:
+        type: object
+        properties:
+          reason:
+            type: string
+            enum:
+              - audit
+              - investigation
+              - migration_planning
+        required:
+          - reason
+      preconditions:
+        - "session_active"
+      time_cost: 30
+      effects:
+        - "triggers_system_audit"
+    - action_type: submit_architecture_proposal
+      parameter_schema:
+        type: object
+        properties:
+          proposal_document:
+            type: string
+          estimated_timeline:
+            type: string
+        required:
+          - proposal_document
+          - estimated_timeline
+      time_cost: 180
+
+evaluation:
+  dimensions:
+    - name: discovery
+      weight: 0.30
+      criteria:
+        - "Identified that the prototype cannot scale beyond 2x current load"
+        - "Discovered zero test coverage and no CI/CD as critical risks"
+        - "Recognized single developer bus factor as existential threat"
+        - "Uncovered stakeholder hidden incentives and false beliefs"
+      automated_indicators:
+        - "target_facts_discovered_count"
+      rubric_indicators:
+        - "Identifies system brittleness as fundamental scaling blocker"
+    - name: technical
+      weight: 0.25
+      criteria:
+        - "Proposed proper architecture with testing, CI/CD, and monitoring"
+        - "Designed migration strategy from legacy to new system"
+        - "Recommended technology stack suitable for enterprise scale"
+    - name: delivery
+      weight: 0.20
+      criteria:
+        - "Delivered clear recommendation document with phased migration plan"
+        - "Stakeholder buy-in from product, engineering, and compliance"
+    - name: operational
+      weight: 0.15
+      criteria:
+        - "Planned knowledge transfer and bus factor mitigation"
+        - "Designed observability and monitoring for the new system"
+    - name: governance
+      weight: 0.10
+      criteria:
+        - "Addressed access control and compliance gaps"
+        - "Ensured data integrity during migration"
+  hard_constraints:
+    - constraint_type: must_identify_brittleness
+      severity: critical
+      description: "Must identify that the prototype is too brittle to scale"
+      condition: "participant.identifies_brittleness == true"
+  target_facts:
+    - "Zero_test_coverage_means_every_deployment_risks_undetected_regressions"
+    - "No_CI_CD_means_no_repeatable_deployment_process"
+    - "Single_developer_bus_factor_means_complete_knowledge_loss_risk"
+    - "Manual_spreadsheet_reconciliation_means_inconsistency_and_data_drift"
+    - "No_monitoring_means_production_issues_discovered_by_customer_complaints"
+    - "The_current_prototype_can_be_fixed_with_incremental_patches_and_more_hardware"
+  valid_strategy_patterns:
+    - "rebuild_with_proper_architecture_and_tests"
+    - "phased_migration_with_business_continuity"
+    - "knowledge_transfer_and_bus_factor_mitigation"
+  invalid_strategy_patterns:
+    - "incremental_patching_of_legacy_system"
+    - "throw_more_hardware_at_the_problem"
+  counterfactual_notes:
+    - "If sole developer leaves before knowledge transfer, system becomes unmaintainable"
+    - "Each week of delayed migration compounds technical debt and incident costs"
