@@ -10,12 +10,16 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from afcs_api.db import Base
+
+if TYPE_CHECKING:
+    from afcs_domain import SimulationEvent
 
 
 class CaseRecord(Base):
@@ -76,3 +80,18 @@ class EventRecord(Base):
 
     # relationships
     session: Mapped[SessionRecord] = relationship("SessionRecord", back_populates="events")
+
+    def to_domain_event(self) -> SimulationEvent:
+        """Convert this EventRecord to a domain SimulationEvent."""
+        return SimulationEvent(
+            event_id=self.id,
+            session_id=self.session_id,
+            sequence=self.sequence,
+            timestamp=self.created_at,
+            actor_type=self.actor_type,
+            actor_id=self.actor_id,
+            event_type=self.event_type,
+            payload=self.payload,
+            pre_state_hash=self.pre_state_hash,
+            post_state_hash=self.post_state_hash,
+        )
