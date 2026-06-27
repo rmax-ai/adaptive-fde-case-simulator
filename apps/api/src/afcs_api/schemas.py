@@ -156,3 +156,55 @@ class StakeholderListResponse(BaseModel):
     """List of stakeholders in the session."""
 
     stakeholders: list[StakeholderInfo] = Field(default_factory=list)
+
+
+# ── Evaluation Models ────────────────────────────────────────────────────
+
+
+class DimensionScore(BaseModel):
+    """Score for a single evaluation dimension."""
+
+    name: str
+    score: float = Field(default=0.0, ge=0.0, le=100.0)
+    max_score: float = 100.0
+    weight: float = Field(default=1.0, ge=0.0, le=1.0)
+    findings: list[str] = Field(default_factory=list)
+    missed_evidence: list[str] = Field(default_factory=list)
+
+
+class HardConstraintOutcome(BaseModel):
+    """Result of a single hard constraint check."""
+
+    constraint_type: str
+    severity: str = "major"
+    passed: bool
+    description: str | None = None
+    details: str | None = None
+
+
+class EvaluationResponse(BaseModel):
+    """Evaluation results for a completed session."""
+
+    session_id: str
+    overall_score: float = Field(default=0.0, ge=0.0, le=100.0)
+    dimensions: list[DimensionScore] = Field(default_factory=list)
+    hard_constraint_violations: list[HardConstraintOutcome] = Field(default_factory=list)
+    strongest_behaviors: list[str] = Field(default_factory=list)
+    weakest_behaviors: list[str] = Field(default_factory=list)
+    missed_evidence: list[str] = Field(default_factory=list)
+    status: str
+
+
+class ReportResponse(BaseModel):
+    """Full participant report for a completed session."""
+
+    session_id: str
+    case_id: str
+    case_version: str
+    participant_id: str | None = None
+    status: str
+    evaluation: EvaluationResponse | None = None
+    timeline: list[dict] = Field(default_factory=list)
+    artifacts_inspected: list[str] = Field(default_factory=list)
+    stakeholder_interactions: list[dict] = Field(default_factory=list)
+    recommendation: dict = Field(default_factory=dict)

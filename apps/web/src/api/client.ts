@@ -7,7 +7,8 @@ import type {
   ActionParams,
   StakeholderInfo,
   StakeholderMessageResponse,
-  StakeholderMessageRequest,
+  EvaluationResponse,
+  ReportResponse,
 } from "../types";
 
 const BASE_URL = "/api/v1";
@@ -135,6 +136,22 @@ export function submitFinalRecommendation(
     "POST",
     `/sessions/${sessionId}/recommendation`,
     { recommendation },
+  );
+}
+
+// ─── Evaluation & Report API ──────────────────────────────────
+
+export function getEvaluation(sessionId: string): Promise<EvaluationResponse> {
+  return request<EvaluationResponse>(
+    "GET",
+    `/sessions/${sessionId}/evaluation`,
+  );
+}
+
+export function getReport(sessionId: string): Promise<ReportResponse> {
+  return request<ReportResponse>(
+    "GET",
+    `/sessions/${sessionId}/report`,
   );
 }
 

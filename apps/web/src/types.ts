@@ -116,3 +116,45 @@ export interface MessageEntry {
   tone?: string;
   timestamp: string;
 }
+
+// ─── Evaluation & Report ──────────────────────────────────────
+export interface DimensionScore {
+  name: string;
+  score: number;
+  max_score: number;
+  weight: number;
+  findings: string[];
+  missed_evidence: string[];
+}
+
+export interface HardConstraintOutcome {
+  constraint_type: string;
+  severity: string;
+  passed: boolean;
+  description: string | null;
+  details: string | null;
+}
+
+export interface EvaluationResponse {
+  session_id: string;
+  overall_score: number;
+  dimensions: DimensionScore[];
+  hard_constraint_violations: HardConstraintOutcome[];
+  strongest_behaviors: string[];
+  weakest_behaviors: string[];
+  missed_evidence: string[];
+  status: string;
+}
+
+export interface ReportResponse {
+  session_id: string;
+  case_id: string;
+  case_version: string;
+  participant_id: string | null;
+  status: string;
+  evaluation: EvaluationResponse | null;
+  timeline: Record<string, unknown>[];
+  artifacts_inspected: string[];
+  stakeholder_interactions: Record<string, unknown>[];
+  recommendation: Record<string, unknown>;
+}
