@@ -1,0 +1,185 @@
+metadata:
+  case_id: wrong_use_case
+  version: "1.0.0"
+  title: "The Wrong Use Case"
+  domain: "enterprise-support"
+  status: published
+  difficulty: intermediate
+  author_ids:
+    - "author-1"
+  reviewer_ids:
+    - "reviewer-1"
+
+business:
+  stated_goal: "Implement GenAI for customer support ticket routing"
+  latent_goal: "Identify the real problem (workflow automation, not AI)"
+  baseline_metrics:
+    tickets_per_day: 10000
+    agents: 500
+  success_criteria:
+    - "Correctly identify that GenAI is the wrong solution"
+    - "Propose a rule-based workflow automation alternative"
+    - "Deliver recommendation within $50k budget"
+  budget:
+    amount: 50000
+    currency: USD
+  deadline_days: 30
+  current_process: "Manual ticket routing by 500 support agents"
+  business_risks:
+    - "Vendor lock-in with GenAI platform"
+    - "Agent resistance to new system"
+    - "Budget overrun on AI implementation"
+
+technical:
+  systems:
+    - name: "Ticket System"
+      type: "CRM"
+      description: "Existing customer support ticket management system"
+      constraints:
+        - "API rate limit of 100 req/min"
+  data_sources: []
+  apis: []
+  identity_model: {}
+  deployment_environment: {}
+  observability: {}
+  hidden_defects:
+    - "GenAI will hallucinate on unstructured ticket data"
+    - "Rule-based engine sufficient for structured routing"
+  technical_constraints:
+    - "Must integrate with existing CRM"
+    - "No cloud infrastructure for model hosting"
+
+organization:
+  stakeholders:
+    - stakeholder_id: cto
+      role: "Chief Technology Officer"
+      authority: 8
+      trust_initial: 5
+      goals:
+        - "Improve support efficiency"
+        - "Avoid another failed AI project"
+      hidden_incentives:
+        - "Previous AI project failed, needs redemption"
+      knowledge:
+        - "Current system architecture"
+        - "Budget constraints"
+      false_beliefs:
+        - "GenAI is the only modern solution"
+      disclosure_rules:
+        - "Will not admit previous AI failure unprompted"
+      escalation_rules:
+        - "Escalates budget concerns after threshold"
+      relationships:
+        engineering_team: "trusts implicitly"
+
+governance:
+  data_classification: "internal"
+  applicable_policies:
+    - "Data privacy policy"
+    - "Vendor procurement policy"
+  approval_rules:
+    - "CTO approval required for >$10k spend"
+  human_review_boundaries:
+    - "All AI-generated recommendations must be reviewed"
+  audit_requirements:
+    - "Quarterly audit of AI system performance"
+  forbidden_actions:
+    - "Direct database access"
+    - "External data sharing"
+  automatic_failures: []
+  score_caps: {}
+
+timeline:
+  start_day: 0
+  scheduled_events: []
+  conditional_events: []
+  time_costs: {}
+
+evidence:
+  artifacts:
+    - artifact_id: system-architecture
+      type: document
+      path: "docs/architecture.pdf"
+      visible_initially: true
+
+actions:
+  allowed:
+    - action_type: chat_message
+      parameter_schema:
+        type: object
+        properties:
+          recipient:
+            type: string
+          message:
+            type: string
+        required:
+          - recipient
+          - message
+      preconditions:
+        - "session_active"
+      time_cost: 5
+    - action_type: upload_artifact
+      parameter_schema:
+        type: object
+        properties:
+          filename:
+            type: string
+          content:
+            type: string
+          type:
+            type: string
+            enum:
+              - pdf
+              - docx
+              - md
+        required:
+          - filename
+          - content
+      time_cost: 10
+    - action_type: request_approval
+      parameter_schema:
+        type: object
+        properties:
+          scope:
+            type: string
+          justification:
+            type: string
+        required:
+          - scope
+          - justification
+      time_cost: 15
+
+evaluation:
+  dimensions:
+    - name: discovery
+      weight: 0.30
+      criteria:
+        - "Identified the root cause of customer request"
+        - "Determined feasibility of GenAI for this domain"
+        - "Uncovered hidden constraints"
+    - name: technical
+      weight: 0.20
+      criteria:
+        - "Proposed technically sound alternative"
+    - name: delivery
+      weight: 0.25
+      criteria:
+        - "Delivered clear recommendation document"
+    - name: governance
+      weight: 0.10
+      criteria:
+        - "Considered regulatory implications"
+    - name: operational
+      weight: 0.15
+      criteria:
+        - "Planned rollout and training"
+  hard_constraints:
+    - constraint_type: must_identify_mismatch
+      severity: critical
+      description: "Must identify that GenAI is the wrong solution"
+      condition: "participant.stated_solution != 'genai'"
+  target_facts:
+    - "GenAI_will_hallucinate_on_unstructured_ticket_data"
+    - "Rule-based_engine_sufficient_for_structured_routing"
+    - "Previous_AI_project_failed_needs_redemption"
+    - "GenAI_is_the_only_modern_solution"
