@@ -78,3 +78,41 @@ export interface Artifact {
   metadata: Record<string, unknown>;
   created_at: string;
 }
+
+// ─── Stakeholders ───────────────────────────────────────────
+export type TrustSignal =
+  | "cooperative"
+  | "hesitant"
+  | "blocked"
+  | "escalating"
+  | "awaiting_evidence";
+
+export interface StakeholderInfo {
+  id: string;
+  role: string;
+  trust_signal: TrustSignal;
+}
+
+export interface StakeholderMessageRequest {
+  message: string;
+}
+
+export interface StakeholderMessageResponse {
+  stakeholder_id: string;
+  message: string;
+  tone: string;
+  disclosed_fact_ids: string[];
+}
+
+export interface StakeholderConversation {
+  stakeholder: StakeholderInfo;
+  messages: MessageEntry[];
+}
+
+export interface MessageEntry {
+  id: string;
+  fromParticipant: boolean;
+  text: string;
+  tone?: string;
+  timestamp: string;
+}

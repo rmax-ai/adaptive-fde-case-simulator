@@ -2,6 +2,7 @@ import { ActionLauncher } from "./ActionLauncher";
 import { ArtifactBrowser } from "./ArtifactBrowser";
 import { StateOverview } from "./StateOverview";
 import { RegisterPanel } from "./RegisterPanel";
+import { StakeholderChat } from "./StakeholderChat";
 import { useSession } from "../hooks/useSession";
 import { useActions } from "../hooks/useActions";
 import type { ActionParams } from "../types";
@@ -56,6 +57,7 @@ export function SessionWorkspace({ sessionId, onBack }: SessionWorkspaceProps) {
       <div className="workspace-layout">
         <aside className="workspace-left">
           <ArtifactBrowser sessionId={sessionId} />
+          <StakeholderChat sessionId={sessionId} />
         </aside>
 
         <main className="workspace-center">

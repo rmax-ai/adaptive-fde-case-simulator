@@ -5,6 +5,9 @@ import type {
   SimulationEvent,
   Artifact,
   ActionParams,
+  StakeholderInfo,
+  StakeholderMessageResponse,
+  StakeholderMessageRequest,
 } from "../types";
 
 const BASE_URL = "/api/v1";
@@ -132,5 +135,28 @@ export function submitFinalRecommendation(
     "POST",
     `/sessions/${sessionId}/recommendation`,
     { recommendation },
+  );
+}
+
+// ─── Stakeholder API ─────────────────────────────────────────
+
+export function getStakeholders(
+  sessionId: string,
+): Promise<{ stakeholders: StakeholderInfo[] }> {
+  return request<{ stakeholders: StakeholderInfo[] }>(
+    "GET",
+    `/sessions/${sessionId}/stakeholders`,
+  );
+}
+
+export function sendStakeholderMessage(
+  sessionId: string,
+  stakeholderId: string,
+  message: string,
+): Promise<StakeholderMessageResponse> {
+  return request<StakeholderMessageResponse>(
+    "POST",
+    `/sessions/${sessionId}/stakeholders/${stakeholderId}/messages`,
+    { message },
   );
 }
