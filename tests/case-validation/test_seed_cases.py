@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from afcs_case_schema.reachability import check_reachability
 from afcs_case_schema.validator import validate_case
 

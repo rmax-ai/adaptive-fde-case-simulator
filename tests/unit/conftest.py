@@ -5,10 +5,8 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
-
 from afcs_case_schema import (
     ActionDefinition,
-    ActionRegistry as CaseActionRegistry,
     BusinessState,
     CaseDefinition,
     CaseMetadata,
@@ -22,8 +20,10 @@ from afcs_case_schema import (
     TechnicalState,
     TimelineConfig,
 )
-from afcs_domain import SessionStatus, SimulationSession
-
+from afcs_case_schema import (
+    ActionRegistry as CaseActionRegistry,
+)
+from afcs_domain import SimulationSession
 from afcs_simulation_engine import ActionRegistry, StateTransitionEngine
 
 

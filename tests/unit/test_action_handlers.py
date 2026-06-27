@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import pytest
-
-from afcs_simulation_engine.actions import ACTION_HANDLERS, handle_inspect_artifact
+from afcs_simulation_engine.actions import ACTION_HANDLERS
 
 
 class TestActionHandlers:

@@ -19,7 +19,7 @@ from afcs_case_schema.models import (
     TechnicalState,
     TimelineConfig,
 )
-from afcs_case_schema.reachability import check_reachability, ReachabilityChecker
+from afcs_case_schema.reachability import ReachabilityChecker, check_reachability
 
 
 def _make_case_def(
