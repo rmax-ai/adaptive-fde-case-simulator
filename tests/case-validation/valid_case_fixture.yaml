@@ -1,0 +1,115 @@
+metadata:
+  case_id: test_hello_world
+  version: 1.0.0
+  title: "Hello World Test Case"
+  domain: testing
+  status: draft
+  difficulty: introductory
+  author_ids:
+    - author_test
+  reviewer_ids: []
+  created_at: "2025-01-01T00:00:00Z"
+  updated_at: "2025-01-01T00:00:00Z"
+  source_lineage: null
+  contamination_risk: null
+
+business:
+  stated_goal: "Demonstrate that the simulation works"
+  latent_goal: null
+  baseline_metrics:
+    uptime: 99.9
+  success_criteria:
+    - "Simulation starts"
+  budget:
+    amount: 10000
+    currency: USD
+  deadline_days: 30
+  current_process: null
+  business_risks: []
+
+technical:
+  systems:
+    - name: test_system
+      type: web_app
+      description: "A test system"
+      constraints: []
+  data_sources:
+    - name: test_db
+      type: postgres
+      format: sql
+      schema_info: null
+      refresh_frequency: null
+  apis: []
+  identity_model: {}
+  deployment_environment: {}
+  observability: {}
+  hidden_defects: []
+  technical_constraints: []
+
+organization:
+  stakeholders:
+    - stakeholder_id: stakeholder_test
+      role: "Test Role"
+      authority: 5
+      trust_initial: 5
+      goals: []
+      hidden_incentives: []
+      knowledge: []
+      false_beliefs: []
+      disclosure_rules: []
+      escalation_rules: []
+      relationships: {}
+
+governance:
+  data_classification: public
+  applicable_policies: []
+  approval_rules: []
+  human_review_boundaries: []
+  audit_requirements: []
+  forbidden_actions: []
+  score_caps: {}
+  automatic_failures: []
+
+timeline:
+  start_day: 0
+  scheduled_events: []
+  conditional_events: []
+  time_costs: {}
+
+evidence:
+  artifacts:
+    - artifact_id: doc_001
+      type: document
+      path: "docs/test.md"
+      visible_initially: true
+      reveal_conditions: []
+      classification: null
+      content_version: null
+
+actions:
+  allowed:
+    - action_type: test_action
+      parameter_schema:
+        type: object
+        properties:
+          message:
+            type: string
+      preconditions: []
+      time_cost: 5
+      budget_cost: null
+      effects: []
+      observations: []
+
+evaluation:
+  dimensions:
+    - name: test_dimension
+      weight: 1.0
+      criteria:
+        - "Everything works"
+      automated_indicators: []
+      rubric_indicators: []
+  hard_constraints: []
+  target_facts: []
+  valid_strategy_patterns: []
+  invalid_strategy_patterns: []
+  counterfactual_notes: []

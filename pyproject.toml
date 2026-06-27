@@ -1,0 +1,76 @@
+[project]
+name = "afcs"
+version = "0.1.0"
+description = "Adaptive Forward Deployed Engineer Case Simulator"
+requires-python = ">=3.12"
+readme = "README.md"
+license = { text = "MIT" }
+
+dependencies = [
+    "fastapi>=0.115",
+    "pydantic>=2.9",
+    "sqlalchemy>=2.0",
+    "alembic>=1.14",
+    "asyncpg>=0.30",
+    "structlog>=24",
+    "uvicorn>=0.32",
+    "pyyaml>=6",
+    "httpx>=0.28",
+    "click>=8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6",
+    "hypothesis>=6",
+    "ruff>=0.7",
+    "ty>=0.0",
+    "httpx>=0.28",
+    "playwright>=1.49",
+    "aiosqlite>=0.20",
+]
+
+[project.scripts]
+afcs = "afcs_api.cli:main"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "RUF", "B", "SIM", "C4"]
+
+[tool.ty]
+packages = ["packages", "apps/api/src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = [
+    "packages/case-schema/src",
+    "packages/domain/src",
+    "packages/simulation-engine/src",
+    "packages/stakeholder-engine/src",
+    "packages/evaluation-engine/src",
+    "packages/model-gateway/src",
+    "packages/shared-types/src",
+    "apps/api/src",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "packages/case-schema/src/afcs_case_schema",
+    "packages/domain/src/afcs_domain",
+    "packages/simulation-engine/src/afcs_simulation_engine",
+    "packages/stakeholder-engine/src/afcs_stakeholder_engine",
+    "packages/evaluation-engine/src/afcs_evaluation_engine",
+    "packages/model-gateway/src/afcs_model_gateway",
+    "packages/shared-types/src/afcs_shared_types",
+    "apps/api/src/afcs_api",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
