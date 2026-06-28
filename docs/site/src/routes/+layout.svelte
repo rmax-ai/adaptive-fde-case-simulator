@@ -5,7 +5,7 @@
 
   let { children } = $props();
 
-  let mobileOpen = false;
+  let mobileOpen = $state(false);
 
 
   const nav = [
